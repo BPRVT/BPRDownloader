@@ -11,8 +11,8 @@ android {
         applicationId = "com.bprvt.bprdownloader"
         minSdk = 22
         targetSdk = 34
-        versionCode = 2
-        versionName = "2.0.0"
+        versionCode = 3
+        versionName = "3.0.0"
     }
 
     // Release signing is driven entirely by environment variables so that no key

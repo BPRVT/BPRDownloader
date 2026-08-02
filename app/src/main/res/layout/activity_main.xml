@@ -3,57 +3,63 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:padding="32dp">
 
+    <!-- Left: how to reach this box from a phone. -->
     <LinearLayout
-        android:layout_width="212dp"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:background="@color/bg_raised"
-        android:orientation="vertical"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingTop="28dp"
-        android:paddingBottom="20dp">
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textColor="@color/orange"
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingBottom="24dp"
-            android:text="@string/app_name"
+            android:layout_marginTop="20dp"
+            android:text="@string/send_instructions"
+            android:textColor="@color/text_secondary"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/addressLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/bg_edit"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
             android:textColor="@color/orange"
-            android:textSize="20sp"
+            android:textSize="32sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/navHome"
-            style="@style/NavButton"
-            android:text="@string/nav_home" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:text="@string/send_pin"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/navBrowser"
-            style="@style/NavButton"
-            android:layout_marginTop="4dp"
-            android:text="@string/nav_browser" />
-
-        <TextView
-            android:id="@+id/navSend"
-            style="@style/NavButton"
-            android:layout_marginTop="4dp"
-            android:text="@string/nav_send" />
-
-        <TextView
-            android:id="@+id/navFiles"
-            style="@style/NavButton"
-            android:layout_marginTop="4dp"
-            android:text="@string/nav_files" />
-
-        <TextView
-            android:id="@+id/navSettings"
-            style="@style/NavButton"
-            android:layout_marginTop="4dp"
-            android:text="@string/nav_settings" />
+            android:id="@+id/pinLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:letterSpacing="0.3"
+            android:textColor="@color/text_primary"
+            android:textSize="46sp"
+            android:textStyle="bold" />
 
         <View
             android:layout_width="match_parent"
@@ -61,53 +67,60 @@
             android:layout_weight="1" />
 
         <TextView
-            android:id="@+id/versionLabel"
+            android:id="@+id/statusText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp" />
+
+        <ProgressBar
+            android:id="@+id/statusProgress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:max="100"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/versionLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
             android:textColor="@color/text_secondary"
             android:textSize="12sp" />
     </LinearLayout>
 
+    <!-- Right: what has landed, so it can be installed with the remote. -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
+        android:layout_marginStart="36dp"
         android:orientation="vertical">
 
-        <FrameLayout
-            android:id="@+id/container"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+        <TextView
+            style="@style/SectionHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/files_title" />
 
-        <LinearLayout
-            android:id="@+id/statusBar"
+        <TextView
+            android:id="@+id/emptyLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/bg_raised"
-            android:orientation="vertical"
-            android:paddingStart="28dp"
-            android:paddingEnd="28dp"
-            android:paddingTop="10dp"
-            android:paddingBottom="12dp"
-            android:visibility="gone">
+            android:layout_marginTop="20dp"
+            android:text="@string/files_empty"
+            android:textColor="@color/text_secondary"
+            android:textSize="15sp"
+            android:visibility="gone" />
 
-            <TextView
-                android:id="@+id/statusText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" />
-
-            <ProgressBar
-                android:id="@+id/statusProgress"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:max="100" />
-        </LinearLayout>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/fileList"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="14dp"
+            android:layout_weight="1"
+            android:clipToPadding="false" />
     </LinearLayout>
 </LinearLayout>

@@ -21,7 +21,7 @@ import kotlin.random.Random
  * network.
  */
 class SendServer(
-    private val onSubmit: (url: String, browse: Boolean) -> Unit,
+    private val onSubmit: (url: String) -> Unit,
     private val historyProvider: () -> List<HistoryEntry>
 ) {
 
@@ -137,9 +137,8 @@ class SendServer(
                     respond(output, 200, JSON, """{"ok":false,"message":"Enter a link"}""")
                     return
                 }
-                val browse = form["action"] == "browse"
-                onSubmit(url, browse)
-                val message = quote(if (browse) "Opening on the TV" else "Downloading on the TV")
+                onSubmit(url)
+                val message = quote("Downloading on the TV")
                 respond(output, 200, JSON, """{"ok":true,"message":$message}""")
             }
 
@@ -253,8 +252,7 @@ h2{font-size:13px;color:#9AA6B4;margin:28px 0 10px;text-transform:uppercase;lett
        placeholder="Paste a link">
 
 <div class="row">
-  <button onclick="send('download')">Download</button>
-  <button class="alt" onclick="send('browse')">Open</button>
+  <button onclick="send()">Send to TV</button>
 </div>
 
 <div id="msg"></div>
@@ -285,9 +283,9 @@ function post(path, data){
   }).then(function(r){ return r.json(); });
 }
 
-function send(action){
+function send(){
   localStorage.setItem('pin', pin.value);
-  post('/send', {pin: pin.value, url: document.getElementById('url').value, action: action})
+  post('/send', {pin: pin.value, url: document.getElementById('url').value})
     .then(function(r){
       show(r.ok, r.message);
       if (r.ok) document.getElementById('url').value = '';
@@ -310,7 +308,7 @@ function loadHistory(){
       b.appendChild(s);
       b.onclick = function(){
         document.getElementById('url').value = it.url;
-        send('download');
+        send();
       };
       box.appendChild(b);
     });

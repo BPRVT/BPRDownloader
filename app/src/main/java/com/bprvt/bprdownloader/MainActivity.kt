@@ -5,36 +5,36 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.bprvt.bprdownloader.data.HistoryEntry
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bprvt.bprdownloader.data.HistoryRepo
-import com.bprvt.bprdownloader.data.Prefs
 import com.bprvt.bprdownloader.databinding.ActivityMainBinding
 import com.bprvt.bprdownloader.download.Downloads
 import com.bprvt.bprdownloader.download.Installer
-import com.bprvt.bprdownloader.ui.BackHandler
-import com.bprvt.bprdownloader.ui.BrowserFragment
-import com.bprvt.bprdownloader.ui.FilesFragment
-import com.bprvt.bprdownloader.ui.HomeFragment
-import com.bprvt.bprdownloader.ui.SendFragment
-import com.bprvt.bprdownloader.ui.SettingsFragment
+import com.bprvt.bprdownloader.send.SendServer
+import com.bprvt.bprdownloader.ui.FilesAdapter
 import com.bprvt.bprdownloader.util.Format
 import com.bprvt.bprdownloader.util.Urls
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.io.File
 
+/**
+ * The whole app: show where the phone should connect, take whatever it sends,
+ * and let the remote install the results.
+ */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private var currentTag: String = TAG_HOME
+    private lateinit var filesAdapter: FilesAdapter
+
+    private var server: SendServer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,122 +43,56 @@ class MainActivity : AppCompatActivity() {
 
         binding.versionLabel.text = "v${BuildConfig.VERSION_NAME}"
 
-        wireNav(binding.navHome, TAG_HOME)
-        wireNav(binding.navBrowser, TAG_BROWSER)
-        wireNav(binding.navSend, TAG_SEND)
-        wireNav(binding.navFiles, TAG_FILES)
-        wireNav(binding.navSettings, TAG_SETTINGS)
-
-        if (savedInstanceState == null) {
-            show(TAG_HOME)
-        } else {
-            currentTag = savedInstanceState.getString(STATE_TAG) ?: TAG_HOME
-            show(currentTag)
-        }
+        filesAdapter = FilesAdapter { file -> showFileMenu(file) }
+        binding.fileList.layoutManager = LinearLayoutManager(this)
+        binding.fileList.adapter = filesAdapter
 
         observeDownloads()
         requestNotificationPermissionIfNeeded()
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putString(STATE_TAG, currentTag)
+    // The server's lifetime is the app's: opening the app is what turns the
+    // sender on, and leaving it closes the port.
+    override fun onStart() {
+        super.onStart()
+        startServer()
+        refreshFiles()
     }
 
-    private fun wireNav(view: TextView, tag: String) {
-        view.setOnClickListener { show(tag) }
+    override fun onStop() {
+        super.onStop()
+        server?.stop()
+        server = null
     }
 
-    // --- navigation --------------------------------------------------------
-
-    fun show(tag: String) {
-        currentTag = tag
-        val manager = supportFragmentManager
-        val transaction = manager.beginTransaction()
-
-        // Fragments are added once and then hidden/shown, so the browser keeps
-        // its loaded page and scroll position when you pop over to Home.
-        for (existing in manager.fragments) {
-            if (existing.tag != tag) transaction.hide(existing)
-        }
-        val target = manager.findFragmentByTag(tag)
-        if (target == null) {
-            transaction.add(R.id.container, newFragment(tag), tag)
-        } else {
-            transaction.show(target)
-        }
-        transaction.commit()
-
-        binding.navHome.isSelected = tag == TAG_HOME
-        binding.navBrowser.isSelected = tag == TAG_BROWSER
-        binding.navSend.isSelected = tag == TAG_SEND
-        binding.navFiles.isSelected = tag == TAG_FILES
-        binding.navSettings.isSelected = tag == TAG_SETTINGS
-    }
-
-    private fun newFragment(tag: String): Fragment = when (tag) {
-        TAG_BROWSER -> BrowserFragment()
-        TAG_SEND -> SendFragment()
-        TAG_FILES -> FilesFragment()
-        TAG_SETTINGS -> SettingsFragment()
-        else -> HomeFragment()
-    }
-
-    private fun currentFragment(): Fragment? = supportFragmentManager.findFragmentByTag(currentTag)
-
-    @Suppress("DEPRECATION")
-    override fun onBackPressed() {
-        val fragment = currentFragment()
-        if (fragment is BackHandler && fragment.onBackPressedInFragment()) return
-        if (currentTag != TAG_HOME) {
-            show(TAG_HOME)
+    private fun startServer() {
+        val instance = SendServer(
+            onSubmit = { url -> handleSubmit(url) },
+            historyProvider = { HistoryRepo.all() }
+        )
+        server = instance
+        if (!instance.start()) {
+            binding.addressLabel.text = getString(R.string.send_failed)
+            binding.pinLabel.text = ""
             return
         }
-        super.onBackPressed()
+        binding.addressLabel.text = instance.address() ?: getString(R.string.send_no_network)
+        binding.pinLabel.text = instance.pin
     }
 
-    // --- actions shared by fragments ---------------------------------------
-
-    /**
-     * Set by [openInBrowser] and consumed by [BrowserFragment] once its view
-     * exists — the fragment may not be created yet when the call comes in.
-     */
-    var pendingBrowserUrl: String? = null
-
-    fun openInBrowser(url: String) {
-        pendingBrowserUrl = url
-        show(TAG_BROWSER)
-        supportFragmentManager.executePendingTransactions()
-        (supportFragmentManager.findFragmentByTag(TAG_BROWSER) as? BrowserFragment)?.consumePendingUrl()
-        lifecycleScope.launch(Dispatchers.IO) {
-            HistoryRepo.record(url, Urls.shortLabel(url), HistoryEntry.KIND_PAGE)
+    /** Called on a server thread. */
+    private fun handleSubmit(rawUrl: String) {
+        val url = Urls.normalize(rawUrl) ?: return
+        runOnUiThread {
+            lifecycleScope.launch(Dispatchers.IO) {
+                HistoryRepo.record(url)
+                HistoryRepo.trimTo(HISTORY_LIMIT)
+            }
+            Downloads.enqueue(this, url)
         }
     }
 
-    /** Entry point for every download in the app. */
-    fun startDownload(url: String, fileNameHint: String? = null, askFirst: Boolean = Prefs.confirmBeforeDownload) {
-        val name = fileNameHint ?: Urls.fileNameFrom(url)
-        if (!askFirst) {
-            enqueue(url, fileNameHint)
-            return
-        }
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.download))
-            .setMessage("$name\n\n${Urls.host(url)}")
-            .setPositiveButton(R.string.download) { _, _ -> enqueue(url, fileNameHint) }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
-    }
-
-    private fun enqueue(url: String, fileNameHint: String?) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            HistoryRepo.record(url, fileNameHint ?: Urls.shortLabel(url))
-            HistoryRepo.trimTo(Prefs.historyLimit)
-        }
-        Downloads.enqueue(this, url, fileNameHint)
-    }
-
-    // --- download status ---------------------------------------------------
+    // --- downloads ---------------------------------------------------------
 
     private fun observeDownloads() {
         lifecycleScope.launch {
@@ -166,10 +100,11 @@ class MainActivity : AppCompatActivity() {
                 launch {
                     Downloads.active.collectLatest { task ->
                         if (task == null || task.state != Downloads.State.RUNNING) {
-                            binding.statusBar.visibility = View.GONE
+                            binding.statusProgress.visibility = View.GONE
+                            binding.statusText.text = ""
                             return@collectLatest
                         }
-                        binding.statusBar.visibility = View.VISIBLE
+                        binding.statusProgress.visibility = View.VISIBLE
                         val done = Format.bytes(task.bytesDone)
                         val total = if (task.bytesTotal > 0) Format.bytes(task.bytesTotal) else "?"
                         binding.statusText.text = "${task.fileName}  ·  $done / $total"
@@ -189,7 +124,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onDownloadFinished(task: Downloads.Task) {
-        binding.statusBar.visibility = View.GONE
+        binding.statusProgress.visibility = View.GONE
+        binding.statusText.text = ""
+        refreshFiles()
+
         if (task.state == Downloads.State.FAILED) {
             AlertDialog.Builder(this)
                 .setTitle(R.string.download_failed)
@@ -200,26 +138,59 @@ class MainActivity : AppCompatActivity() {
         }
 
         val file = task.file ?: return
-        if (!Urls.isApk(file.name)) {
-            AlertDialog.Builder(this)
-                .setTitle(R.string.download_complete)
-                .setMessage("${file.name}\n${Format.bytes(task.bytesDone)}")
-                .setPositiveButton(R.string.open) { _, _ -> runCatching { Installer.open(this, file) } }
-                .setNegativeButton(android.R.string.ok, null)
-                .show()
-            return
-        }
+        if (!Urls.isApk(file.name)) return
 
+        // An APK is almost always meant to be installed, so offer it straight away.
         AlertDialog.Builder(this)
             .setTitle(R.string.download_complete)
             .setMessage("${file.name}\n${Format.bytes(task.bytesDone)}")
             .setPositiveButton(R.string.install) { _, _ -> requestInstall(file) }
-            .setNegativeButton(R.string.delete) { _, _ -> file.delete() }
-            .setNeutralButton(android.R.string.ok, null)
+            .setNegativeButton(android.R.string.ok, null)
             .show()
     }
 
-    fun requestInstall(file: java.io.File) {
+    // --- files -------------------------------------------------------------
+
+    private fun refreshFiles() {
+        val files = Downloads.downloadDir(this)
+            .listFiles()
+            ?.filter { it.isFile }
+            ?.sortedByDescending { it.lastModified() }
+            ?: emptyList()
+        filesAdapter.submitList(files)
+        binding.emptyLabel.visibility = if (files.isEmpty()) View.VISIBLE else View.GONE
+    }
+
+    private fun showFileMenu(file: File) {
+        val isApk = Urls.isApk(file.name)
+        val options = arrayOf(
+            getString(if (isApk) R.string.install else R.string.open),
+            getString(R.string.delete)
+        )
+        AlertDialog.Builder(this)
+            .setTitle(file.name)
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> if (isApk) requestInstall(file) else runCatching { Installer.open(this, file) }
+                    1 -> confirmDelete(file)
+                }
+            }
+            .show()
+    }
+
+    private fun confirmDelete(file: File) {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.delete)
+            .setMessage(file.name)
+            .setPositiveButton(R.string.delete) { _, _ ->
+                file.delete()
+                refreshFiles()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun requestInstall(file: File) {
         if (!Installer.canInstall(this)) {
             AlertDialog.Builder(this)
                 .setTitle(R.string.install_blocked_title)
@@ -232,11 +203,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
         runCatching { Installer.install(this, file) }
-        if (Prefs.deleteAfterInstall) {
-            // The installer reads the APK asynchronously, so give it a moment
-            // before the file disappears from under it.
-            binding.root.postDelayed({ file.delete() }, 60_000L)
-        }
     }
 
     private fun requestNotificationPermissionIfNeeded() {
@@ -251,13 +217,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        const val TAG_HOME = "home"
-        const val TAG_BROWSER = "browser"
-        const val TAG_SEND = "send"
-        const val TAG_FILES = "files"
-        const val TAG_SETTINGS = "settings"
-
-        private const val STATE_TAG = "current_tag"
         private const val REQ_NOTIFICATIONS = 42
+        private const val HISTORY_LIMIT = 200
     }
 }
