@@ -139,8 +139,8 @@ class SendServer(
                 }
                 val browse = form["action"] == "browse"
                 onSubmit(url, browse)
-                val verb = if (browse) "Opening" else "Downloading"
-                respond(output, 200, JSON, """{"ok":true,"message":${quote("$verb on the TV")}}""")
+                val message = quote(if (browse) "Opening on the TV" else "Downloading on the TV")
+                respond(output, 200, JSON, """{"ok":true,"message":$message}""")
             }
 
             method == "POST" && path == "/history" -> {

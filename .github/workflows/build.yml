@@ -46,7 +46,20 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: gradle assembleRelease --no-daemon --stacktrace
+        run: |
+          set -o pipefail
+          gradle assembleRelease --no-daemon 2>&1 | tee "$RUNNER_TEMP/build.log"
+
+      # Surface compile errors as annotations so failures are readable without
+      # downloading the full log.
+      - name: Report build errors
+        if: failure()
+        run: |
+          grep -E "^e: |error:|> What went wrong|^Caused by:" "$RUNNER_TEMP/build.log" \
+            | head -30 \
+            | while IFS= read -r line; do echo "::error::${line}"; done
+          echo "--- tail ---"
+          tail -40 "$RUNNER_TEMP/build.log"
 
       - name: Collect APK
         run: |
