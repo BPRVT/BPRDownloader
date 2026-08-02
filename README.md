@@ -32,6 +32,14 @@ current build.
 
 ## Signing
 
-Builds are signed with the debug key unless you add these repo secrets:
-`KEYSTORE_B64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`. Without them
-you may need to uninstall before installing a new build.
+Builds use a throwaway debug key until you set up a real one, which means each
+release refuses to install over the last. To fix that once:
+
+1. Actions → **Generate signing key** → **Run workflow**.
+2. Download the `signing-key` artifact from that run.
+3. Settings → Secrets and variables → Actions, and add the four secrets named
+   in the artifact's `README.txt`.
+
+Every build after that is signed with the same key, so updates install over the
+top and your history survives. Keep a backup of `KEYSTORE_B64.txt` — losing it
+means no more in-place updates, ever.
