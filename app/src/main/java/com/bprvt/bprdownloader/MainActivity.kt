@@ -23,6 +23,7 @@ import com.bprvt.bprdownloader.ui.BackHandler
 import com.bprvt.bprdownloader.ui.BrowserFragment
 import com.bprvt.bprdownloader.ui.FilesFragment
 import com.bprvt.bprdownloader.ui.HomeFragment
+import com.bprvt.bprdownloader.ui.SendFragment
 import com.bprvt.bprdownloader.ui.SettingsFragment
 import com.bprvt.bprdownloader.util.Format
 import com.bprvt.bprdownloader.util.Urls
