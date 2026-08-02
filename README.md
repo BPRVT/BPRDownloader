@@ -20,9 +20,13 @@ current build.
 ## What it does
 
 - **Home** — URL box that doubles as a history search. Type to filter, click a
-  row to download it again. Long-press a row to favourite or delete it.
+  row to download it again. Anything that isn't a URL becomes a Google search.
+  Long-press a row to favourite or delete it.
 - **Browser** — built-in WebView. Press **Cursor** for a D-pad mouse pointer;
   Back turns it off. File links download instead of opening.
+- **Send** — stop typing URLs with a remote. Open the address it shows in your
+  phone's browser, enter the PIN from the TV, and paste links straight in. The
+  server only runs while this screen is open.
 - **Files** — installs APKs, opens anything else, deletes what you're done with.
 - **Settings** — home page, history size, cursor speed, delete-after-install.
 

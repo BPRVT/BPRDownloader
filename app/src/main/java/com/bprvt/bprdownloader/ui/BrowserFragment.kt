@@ -103,7 +103,7 @@ class BrowserFragment : Fragment(), BackHandler {
 
         binding.urlBar.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_GO) {
-                val url = Urls.normalize(binding.urlBar.text.toString())
+                val url = Urls.normalizeOrSearch(binding.urlBar.text.toString())
                 if (url != null) load(url) else {
                     Toast.makeText(requireContext(), R.string.url_hint, Toast.LENGTH_SHORT).show()
                 }

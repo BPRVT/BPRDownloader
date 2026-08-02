@@ -38,6 +38,12 @@
             android:text="@string/nav_browser" />
 
         <TextView
+            android:id="@+id/navSend"
+            style="@style/NavButton"
+            android:layout_marginTop="4dp"
+            android:text="@string/nav_send" />
+
+        <TextView
             android:id="@+id/navFiles"
             style="@style/NavButton"
             android:layout_marginTop="4dp"

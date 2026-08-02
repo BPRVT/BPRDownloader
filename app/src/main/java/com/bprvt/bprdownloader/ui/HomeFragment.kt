@@ -95,12 +95,18 @@ class HomeFragment : Fragment() {
 
     private fun submit(download: Boolean) {
         val raw = binding.urlInput.text.toString()
-        val url = Urls.normalize(raw)
-        if (url == null) {
+        if (raw.isBlank()) {
             Toast.makeText(requireContext(), R.string.url_hint, Toast.LENGTH_SHORT).show()
             return
         }
         val activity = activity as? MainActivity ?: return
+        val url = Urls.normalize(raw)
+        if (url == null) {
+            // Not a URL — search for it. There's nothing to download yet, so
+            // both buttons land in the browser on the results page.
+            activity.openInBrowser(Urls.searchUrl(raw))
+            return
+        }
         if (download) activity.startDownload(url) else activity.openInBrowser(url)
     }
 

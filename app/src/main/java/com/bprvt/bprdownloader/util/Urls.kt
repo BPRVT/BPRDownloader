@@ -53,6 +53,23 @@ object Urls {
 
     fun host(url: String): String = url.substringAfter("://", url).substringBefore('/')
 
+    /** Google search for anything that isn't a URL, so "github" just works. */
+    fun searchUrl(query: String): String {
+        val encoded = runCatching {
+            java.net.URLEncoder.encode(query.trim(), "UTF-8")
+        }.getOrDefault(query.trim().replace(' ', '+'))
+        return "https://www.google.com/search?q=$encoded"
+    }
+
+    /**
+     * Resolves typed input to something loadable: a URL if it looks like one,
+     * otherwise a search. Returns null only for blank input.
+     */
+    fun normalizeOrSearch(raw: String): String? {
+        if (raw.isBlank()) return null
+        return normalize(raw) ?: searchUrl(raw)
+    }
+
     fun isApk(nameOrUrl: String): Boolean =
         nameOrUrl.substringBefore('?').lowercase(Locale.US).endsWith(".apk")
 }

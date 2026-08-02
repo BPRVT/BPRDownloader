@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity() {
 
         wireNav(binding.navHome, TAG_HOME)
         wireNav(binding.navBrowser, TAG_BROWSER)
+        wireNav(binding.navSend, TAG_SEND)
         wireNav(binding.navFiles, TAG_FILES)
         wireNav(binding.navSettings, TAG_SETTINGS)
 
@@ -89,12 +90,14 @@ class MainActivity : AppCompatActivity() {
 
         binding.navHome.isSelected = tag == TAG_HOME
         binding.navBrowser.isSelected = tag == TAG_BROWSER
+        binding.navSend.isSelected = tag == TAG_SEND
         binding.navFiles.isSelected = tag == TAG_FILES
         binding.navSettings.isSelected = tag == TAG_SETTINGS
     }
 
     private fun newFragment(tag: String): Fragment = when (tag) {
         TAG_BROWSER -> BrowserFragment()
+        TAG_SEND -> SendFragment()
         TAG_FILES -> FilesFragment()
         TAG_SETTINGS -> SettingsFragment()
         else -> HomeFragment()
@@ -249,6 +252,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         const val TAG_HOME = "home"
         const val TAG_BROWSER = "browser"
+        const val TAG_SEND = "send"
         const val TAG_FILES = "files"
         const val TAG_SETTINGS = "settings"
 

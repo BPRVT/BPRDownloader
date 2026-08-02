@@ -4,10 +4,17 @@
 
     <string name="nav_home">Home</string>
     <string name="nav_browser">Browser</string>
+    <string name="nav_send">Send</string>
     <string name="nav_files">Files</string>
+
+    <string name="send_instructions">On your phone, open this address in any browser and enter the PIN. Paste a link there and it downloads here. Both devices must be on the same Wi-Fi.</string>
+    <string name="send_pin">PIN</string>
+    <string name="send_received">Received: %1$s</string>
+    <string name="send_no_network">Not connected to Wi-Fi</string>
+    <string name="send_failed">Could not start the server</string>
     <string name="nav_settings">Settings</string>
 
-    <string name="url_hint">Enter a URL or search your history</string>
+    <string name="url_hint">URL, search term, or filter history</string>
     <string name="download">Download</string>
     <string name="browse">Browse</string>
     <string name="history">History</string>
