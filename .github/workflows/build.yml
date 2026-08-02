@@ -58,15 +58,6 @@ jobs:
           name: BPRDownloader-apk
           path: out/BPRDownloader.apk
 
-      # One-time cleanup of the old rolling release; removed in a follow-up commit.
-      - name: Retire rolling release
-        if: github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release delete latest --yes --cleanup-tag || true
-          gh release edit v1.0.0 --title "1.0.0" || true
-
       # Releases are published only for version tags, so the list stays clean.
       # /releases/latest/download/ still resolves to the newest tag.
       - name: Publish tagged release
