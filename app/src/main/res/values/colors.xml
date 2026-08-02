@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="orange">#FF7A00</color>
+    <color name="orange_dark">#C25A00</color>
+    <color name="bg">#12151A</color>
+    <color name="bg_raised">#1C212A</color>
+    <color name="bg_focus">#2E3846</color>
+    <color name="text_primary">#F2F5F8</color>
+    <color name="text_secondary">#9AA6B4</color>
+    <color name="divider">#2A313C</color>
+    <color name="danger">#E5534B</color>
+    <color name="success">#3FB950</color>
+</resources>

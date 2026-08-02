@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BPR Downloader</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_browser">Browser</string>
+    <string name="nav_files">Files</string>
+    <string name="nav_settings">Settings</string>
+
+    <string name="url_hint">Enter a URL or search your history</string>
+    <string name="download">Download</string>
+    <string name="browse">Browse</string>
+    <string name="history">History</string>
+    <string name="filter_hint">Filter history</string>
+    <string name="history_empty">No history yet. Download something and it will show up here.</string>
+    <string name="history_no_match">Nothing in your history matches that.</string>
+
+    <string name="go">Go</string>
+    <string name="back">Back</string>
+    <string name="forward">Forward</string>
+    <string name="home">Home</string>
+    <string name="reload">Reload</string>
+    <string name="cursor_mode">Cursor</string>
+    <string name="cursor_on">Cursor mode ON — press Back to turn it off</string>
+    <string name="cursor_off">Cursor mode off</string>
+
+    <string name="files_empty">No downloaded files.</string>
+    <string name="install">Install</string>
+    <string name="delete">Delete</string>
+    <string name="open">Open</string>
+    <string name="cancel">Cancel</string>
+    <string name="favorite">Favorite</string>
+    <string name="unfavorite">Remove favorite</string>
+    <string name="remove_from_history">Remove from history</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="setting_homepage">Browser home page</string>
+    <string name="setting_history_limit">History entries to keep</string>
+    <string name="setting_delete_after_install">Delete APK after install</string>
+    <string name="setting_confirm_before_download">Ask before starting a download</string>
+    <string name="setting_cursor_speed">Cursor speed</string>
+    <string name="setting_clear_history">Clear all history</string>
+    <string name="setting_clear_files">Delete all downloaded files</string>
+    <string name="save">Save</string>
+
+    <string name="download_channel_name">Downloads</string>
+    <string name="downloading">Downloading</string>
+    <string name="download_complete">Download complete</string>
+    <string name="download_failed">Download failed</string>
+    <string name="install_blocked_title">Allow installs</string>
+    <string name="install_blocked_message">Android needs permission to install apps from BPR Downloader. Turn it on for this app, then press Install again.</string>
+    <string name="open_settings">Open settings</string>
+</resources>

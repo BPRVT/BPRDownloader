@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Downloads live in the app-specific external files dir, which needs no
+         storage permission on any API level we support. -->
+    <external-files-path
+        name="downloads"
+        path="Download/" />
+    <files-path
+        name="internal_downloads"
+        path="Download/" />
+</paths>

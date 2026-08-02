@@ -1,0 +1,79 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # The `secrets` context can't be used in a step `if:`, so fold the check
+    # into an env var here and test that instead.
+    env:
+      HAS_KEYSTORE: ${{ secrets.KEYSTORE_B64 != '' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      # Optional: set these four repo secrets to sign with a stable key so
+      # updates install over the top instead of forcing an uninstall first.
+      - name: Decode signing key
+        if: env.HAS_KEYSTORE == 'true'
+        run: echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > "$RUNNER_TEMP/release.jks"
+
+      - name: Build release APK
+        env:
+          KEYSTORE_PATH: ${{ secrets.KEYSTORE_B64 != '' && format('{0}/release.jks', runner.temp) || '' }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: gradle assembleRelease --no-daemon --stacktrace
+
+      - name: Collect APK
+        run: |
+          mkdir -p out
+          cp app/build/outputs/apk/release/app-release.apk out/BPRDownloader.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BPRDownloader-apk
+          path: out/BPRDownloader.apk
+
+      # A rolling "latest" release gives the Fire TV a stable URL to type in.
+      - name: Update latest release
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest out/BPRDownloader.apk \
+            --title "Latest build" \
+            --notes "Automatic build of ${{ github.sha }}."
+
+      - name: Publish tagged release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" out/BPRDownloader.apk \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes

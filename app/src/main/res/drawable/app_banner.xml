@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fire TV launcher banner, 320x180. Replace with a PNG at
+     res/drawable/app_banner.png if you want custom artwork. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="180dp"
+    android:viewportWidth="320"
+    android:viewportHeight="180">
+
+    <path
+        android:fillColor="#12151A"
+        android:pathData="M0,0 h320 v180 h-320 z" />
+
+    <!-- Orange rounded tile -->
+    <path
+        android:fillColor="#FF7A00"
+        android:pathData="M42,44 L118,44 A14,14 0 0 1 132,58 L132,122 A14,14 0 0 1 118,136 L42,136 A14,14 0 0 1 28,122 L28,58 A14,14 0 0 1 42,44 Z" />
+
+    <!-- Download arrow inside the tile -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M74,60 h12 v26 h-12 z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M63,82 h34 L80,106 z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M58,114 h44 v8 h-44 z" />
+
+    <!-- Wordmark bars -->
+    <path
+        android:fillColor="#F2F5F8"
+        android:pathData="M158,72 h118 v12 h-118 z" />
+    <path
+        android:fillColor="#FF7A00"
+        android:pathData="M158,96 h76 v10 h-76 z" />
+</vector>
